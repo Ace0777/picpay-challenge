@@ -1,24 +1,28 @@
 package br.com.challenge.transaction;
 
 import br.com.challenge.authorization.AuthorizerService;
-import br.com.challenge.expection.InvalidTransactionException;
+import br.com.challenge.notification.NotificationService;
 import br.com.challenge.wallet.Wallet;
 import br.com.challenge.wallet.WalletRepository;
 import br.com.challenge.wallet.WalletType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final WalletRepository walletRepository;
-
     private final AuthorizerService authorizerService;
 
-    public TransactionService(TransactionRepository transactionRepository,WalletRepository walletRepository, AuthorizerService authorizerService){
+    private final NotificationService notificationService;
+
+    public TransactionService(TransactionRepository transactionRepository,WalletRepository walletRepository, AuthorizerService authorizerService, NotificationService notificationService){
         this.transactionRepository = transactionRepository;
         this.walletRepository = walletRepository;
         this.authorizerService = authorizerService;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -40,6 +44,10 @@ public class TransactionService {
         //autorização
         authorizerService.authorize(transaction);
 
+
+        //notificação
+        notificationService.notify(transaction);
+
         return newTransaction;
     }
 
@@ -55,5 +63,9 @@ public class TransactionService {
         return payer.type() == WalletType.COMUM.getValue() &&
                 payer.balance().compareTo(transaction.value()) >= 0 &&
                 !payer.id().equals(transaction.payee());
+    }
+
+    public List<Transaction> list() {
+        return transactionRepository.findAll();
     }
 }

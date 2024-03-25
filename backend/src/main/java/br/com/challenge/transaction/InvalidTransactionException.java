@@ -1,4 +1,4 @@
-package br.com.challenge.expection;
+package br.com.challenge.transaction;
 
 public class InvalidTransactionException extends RuntimeException {
     public InvalidTransactionException(String message){
